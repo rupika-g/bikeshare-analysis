@@ -15,13 +15,13 @@ calculate_trip_duration <- function(data_frame, type_of_rider) {
   data_frame <- clean_names(data_frame)
   mean_trip_duration <- mean(data_frame$trip_duration)
   total_no_of_riders <- length(data_frame$ride_id)
-  print(total_no_of_riders)
-  print(paste("Mean", type_of_rider, mean_trip_duration))
-  return(list("month" = data_frame$started_at[1], "mean" = mean_trip_duration, "num_riders" = total_no_of_riders))
+  #print(paste("Mean", type_of_rider, mean_trip_duration))
+  return(list("month" = data_frame$started_at[1], "mean" = mean_trip_duration, 
+              "num_riders" = total_no_of_riders))
 }
 
 total_riders_per_station <- function(sub_df, df_name) {
-  sub_df %>% group_by(rideable_type) %>% drop_na %>%
+  sub_df %>% group_by(rideable_type) %>%
     summarize(total_rideable_type = length(rideable_type))
   
   # Most popular 10 routes
@@ -31,9 +31,9 @@ total_riders_per_station <- function(sub_df, df_name) {
 }
 
 rideable_types <- function(sub_df, df_name) {
-  types <- sub_df %>% group_by(rideable_type)%>% drop_na %>%
+  types <- sub_df %>% group_by(rideable_type)%>%
     summarize(total_rideable_type = length(rideable_type))
-  print(paste(df_name, types))
+  return(types)
 }
 
 process_csv <- function(file_name) {
@@ -60,10 +60,11 @@ process_csv <- function(file_name) {
   total_riders_per_station(member_df, "Member")
 
   unique(casual_df$rideable_type)
-  rideable_types(casual_df, "Casual")
-  rideable_types(member_df, "Member")
+  number_of_casual_types <- rideable_types(casual_df, "Casual")
+  number_of_member_types <- rideable_types(member_df, "Member")
 
-  return(list("casual" = casual_trip_details, "member" = member_trip_details))
+  return(list("casual" = casual_trip_details, "member" = member_trip_details, 
+              "casual_types" = number_of_casual_types, "member_types" = number_of_member_types))
 }
 
 csv_file_list = list.files("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/", pattern="*-divvy-tripdata.csv", full.names=TRUE)
@@ -77,31 +78,62 @@ member_trip_month_list <- c()
 num_of_casual_riders <- c()
 num_of_member_riders <- c()
 
+casual_rideable_types <- NULL
+member_rideable_types <- NULL
+
 for (csv_file in csv_file_list) {
   trip_details <- process_csv(csv_file)
   casual_trip_duration_list <- append(casual_trip_duration_list, trip_details$casual$mean)
   casual_trip_month_list <- append(casual_trip_month_list, trip_details$casual$month)
   num_of_casual_riders <- append(num_of_casual_riders, trip_details$casual$num_riders)
+  if (is.null(casual_rideable_types)) {
+    casual_rideable_types <- trip_details$casual_types
+  } else {
+    casual_rideable_types <- merge(x = casual_rideable_types, y = trip_details$casual_types, by = "rideable_type", all = TRUE)
+  }
   
   member_trip_duration_list <- append(member_trip_duration_list, trip_details$member$mean)
   member_trip_month_list <- append(member_trip_month_list, trip_details$member$month)
   num_of_member_riders <- append(num_of_member_riders, trip_details$member$num_riders)
+  if (is.null(member_rideable_types)) {
+    member_rideable_types <- trip_details$member_types
+  } else {
+    member_rideable_types <- merge(x = member_rideable_types, y = trip_details$member_types, by = "rideable_type", all = TRUE)
+  }
+  
 }
+
+casual_rideable_types <- data.frame(rideable_type=casual_rideable_types$rideable_type, number_of_rides=rowSums(casual_rideable_types[, 2: 14]))
+member_rideable_types <- data.frame(rideable_type=member_rideable_types$rideable_type, number_of_rides=rowSums(member_rideable_types[, 2: 14]))
+all_rideable_type <- merge(x = casual_rideable_types, y = member_rideable_types, by = "rideable_type", all = TRUE) %>% adorn_totals("row")
+all_rideable_type <- all_rideable_type %>% rename("Casual Rides" = number_of_rides.x, "Member Rides" = number_of_rides.y)
+
+View(all_rideable_type)
 
 print(casual_trip_duration_list)
 
 # Creating df for Mean
 mean_df <- data.frame(Month=casual_trip_month_list, Mean_casual=casual_trip_duration_list, Mean_member=member_trip_duration_list)
 #casual_mean_df <- mean_df %>% arrange(mdy(casual_mean_df$Month))
+
+# Creating df for total number of rides
 number_of_riders_df <- data.frame(Month=casual_trip_month_list, casual_riders=num_of_casual_riders, member_riders=num_of_member_riders)
 
 # Visualization
+# Mean
 ggplot(mean_df, aes(x= Month)) + 
-  geom_line(aes(y= Mean_casual, color= "green"))+
-  geom_line(aes(y= Mean_member, color= "red"))+
-  theme(axis.text.x = element_text(angle = 45))
+  geom_line(aes(y= Mean_casual, color = "mean_casual"))+
+  geom_line(aes(y= Mean_member, color = "mean_member"))+
+  theme(axis.text.x = element_text(angle = 45))+
+  labs(title = "Duration of Casual riders Vs Member riders", subtitle =  "Mean Duration in seconds", 
+       x= "Month", y= "Mean_duration_seconds")
 
+# Total number of riders
 ggplot(number_of_riders_df, aes(x= Month)) + 
-  geom_line(aes(y= casual_riders, color= "green"))+
-  geom_line(aes(y= member_riders, color= "red"))+
-  theme(axis.text.x = element_text(angle = 45))
+  geom_line(aes(y= casual_riders, color = "casual_riders"))+
+  geom_line(aes(y= member_riders, color = "member_riders"))+
+  theme(axis.text.x = element_text(angle = 45)) +
+  labs(title= "Number of Casual rides Vs Member rides", subtitle= "Total number of riders per Month",
+       x= "Month", y="total_number_of_rides")
+
+# Rideable types
