@@ -25,9 +25,12 @@ total_riders_per_station <- function(sub_df, df_name) {
     summarize(total_rideable_type = length(rideable_type))
   
   # Most popular 10 routes
-  new_sub_df <- head(sub_df %>% drop_na() %>% count(start_station_name, end_station_name, sort= TRUE), 10)
+  new_sub_df <- sub_df %>% drop_na() %>% 
+    count(start_station_name, end_station_name, sort= TRUE) %>% 
+    filter(start_station_name == end_station_name)
   
   #View(new_sub_df, df_name)
+  return(new_sub_df)
 }
 
 rideable_types <- function(sub_df, df_name) {
@@ -56,8 +59,10 @@ process_csv <- function(file_name) {
   casual_trip_details <- calculate_trip_duration(casual_df, "casual")
   member_trip_details <- calculate_trip_duration(member_df, "member")
   
-  total_riders_per_station(casual_df, "Casual")
-  total_riders_per_station(member_df, "Member")
+  casual_riders_returning_same_station <- total_riders_per_station(casual_df, "Casual")
+  member_riders_returning_same_station <- total_riders_per_station(member_df, "Member")
+  View(casual_riders_returning_same_station)
+  View(member_riders_returning_same_station)
 
   unique(casual_df$rideable_type)
   number_of_casual_types <- rideable_types(casual_df, "Casual")
