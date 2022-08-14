@@ -75,6 +75,7 @@ process_csv <- function(file_name) {
 }
 
 csv_file_list = list.files("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/", pattern="*-divvy-tripdata.csv", full.names=TRUE)
+number_csv_files = length(csv_file_list)
 
 # Create list 
 casual_trip_duration_list <- c()
@@ -125,20 +126,20 @@ for (csv_file in csv_file_list) {
   }  
 }
 
-casual_rideable_types <- data.frame(rideable_type=casual_rideable_types$rideable_type, number_of_rides=rowSums(casual_rideable_types[, 2: 14]))
-member_rideable_types <- data.frame(rideable_type=member_rideable_types$rideable_type, number_of_rides=rowSums(member_rideable_types[, 2: 14]))
-all_rideable_type <- merge(x = casual_rideable_types, y = member_rideable_types, by = "rideable_type", all = TRUE) %>% adorn_totals("row")
-all_rideable_type <- all_rideable_type %>% rename("Casual Rides" = number_of_rides.x, "Member Rides" = number_of_rides.y)
+casual_rideable_types <- data.frame(rideable_type=casual_rideable_types$rideable_type, number_of_rides=rowSums(casual_rideable_types[, 2: number_csv_files + 1]))
+casual_rideable_types$user_type = "casual"
+member_rideable_types <- data.frame(rideable_type=member_rideable_types$rideable_type, number_of_rides=rowSums(member_rideable_types[, 2: number_csv_files + 1]))
+member_rideable_types$user_type = "member"
+all_rideable_type <- merge(x = casual_rideable_types, y = member_rideable_types, all = TRUE)
+#all_rideable_type <- all_rideable_type %>% rename("Casual Rides" = number_of_rides.x, "Member Rides" = number_of_rides.y)
 
 View(all_rideable_type)
 
 casual_riders_returning_same_station <- data.frame(start_station_name = casual_riders_returning_same_station$start_station_name,
-                                                   number_of_rides=rowSums(casual_riders_returning_same_station[, 2: 14]))
+                                                   number_of_rides=rowSums(casual_riders_returning_same_station[, 2: number_csv_files + 1]))
 
 member_riders_returning_same_station <- data.frame(start_station_name = member_riders_returning_same_station$start_station_name,
-                                                   number_of_rides=rowSums(member_riders_returning_same_station[, 2: 14]))
-View(casual_riders_returning_same_station)
-View(member_riders_returning_same_station)
+                                                   number_of_rides=rowSums(member_riders_returning_same_station[, 2: number_csv_files + 1]))
 
 # Creating df for Mean
 mean_df <- data.frame(Month=casual_trip_month_list, Mean_casual=casual_trip_duration_list, Mean_member=member_trip_duration_list)
@@ -165,3 +166,16 @@ ggplot(number_of_riders_df, aes(x= Month)) +
        x= "Month", y="total_number_of_rides")
 
 # Rideable types
+ggplot(all_rideable_type , aes(fill=user_type, y=number_of_rides, x=rideable_type)) + 
+  geom_bar(position="dodge", stat="identity") + coord_flip()
+
+# Returning to same station
+casual_data <- head(casual_riders_returning_same_station %>% drop_na() %>% arrange(-number_of_rides), 25)
+ggplot(casual_data, aes(x=reorder(start_station_name, number_of_rides), y=number_of_rides, fill=number_of_rides)) + 
+  geom_bar(stat='identity') + coord_flip() # Without stat='identity' ggplot wants to aggregate your data into counts.
+View(casual_riders_returning_same_station)
+
+member_data <- head(member_riders_returning_same_station %>% drop_na() %>% arrange(-number_of_rides), 25)
+ggplot(member_data, aes(x=reorder(start_station_name, number_of_rides), y=number_of_rides, fill=number_of_rides)) + 
+  geom_bar(stat='identity') + coord_flip()
+View(member_riders_returning_same_station)
