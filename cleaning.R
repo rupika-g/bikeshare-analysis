@@ -58,18 +58,20 @@ process_csv <- function(file_name) {
   
   casual_trip_details <- calculate_trip_duration(casual_df, "casual")
   member_trip_details <- calculate_trip_duration(member_df, "member")
-  
-  casual_riders_returning_same_station <- total_riders_per_station(casual_df, "Casual")
-  member_riders_returning_same_station <- total_riders_per_station(member_df, "Member")
-  View(casual_riders_returning_same_station)
-  View(member_riders_returning_same_station)
 
   unique(casual_df$rideable_type)
   number_of_casual_types <- rideable_types(casual_df, "Casual")
   number_of_member_types <- rideable_types(member_df, "Member")
+  
+  casual_riders_returning_same_station <- total_riders_per_station(casual_df, "Casual")
+  casual_riders_returning_same_station <- casual_riders_returning_same_station[c("start_station_name", "n")] # Select only start_station_name and number of riders from the dataframe
+  member_riders_returning_same_station <- total_riders_per_station(member_df, "Member")
+  member_riders_returning_same_station <- member_riders_returning_same_station[c("start_station_name", "n")]
 
   return(list("casual" = casual_trip_details, "member" = member_trip_details, 
-              "casual_types" = number_of_casual_types, "member_types" = number_of_member_types))
+              "casual_types" = number_of_casual_types, "member_types" = number_of_member_types,
+              "casual_returning_same_station" = casual_riders_returning_same_station,
+              "member_returning_same_station" = member_riders_returning_same_station))
 }
 
 csv_file_list = list.files("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/", pattern="*-divvy-tripdata.csv", full.names=TRUE)
@@ -86,6 +88,10 @@ num_of_member_riders <- c()
 casual_rideable_types <- NULL
 member_rideable_types <- NULL
 
+casual_riders_returning_same_station <- NULL
+member_riders_returning_same_station <- NULL
+
+
 for (csv_file in csv_file_list) {
   trip_details <- process_csv(csv_file)
   casual_trip_duration_list <- append(casual_trip_duration_list, trip_details$casual$mean)
@@ -96,6 +102,12 @@ for (csv_file in csv_file_list) {
   } else {
     casual_rideable_types <- merge(x = casual_rideable_types, y = trip_details$casual_types, by = "rideable_type", all = TRUE)
   }
+  if (is.null(casual_riders_returning_same_station)) {
+    casual_riders_returning_same_station <- trip_details$casual_returning_same_station
+  } else {
+    casual_riders_returning_same_station <- merge(x = casual_riders_returning_same_station, 
+                                                  y = trip_details$casual_returning_same_station, by = "start_station_name", all= TRUE)
+  }  
   
   member_trip_duration_list <- append(member_trip_duration_list, trip_details$member$mean)
   member_trip_month_list <- append(member_trip_month_list, trip_details$member$month)
@@ -105,7 +117,12 @@ for (csv_file in csv_file_list) {
   } else {
     member_rideable_types <- merge(x = member_rideable_types, y = trip_details$member_types, by = "rideable_type", all = TRUE)
   }
-  
+  if (is.null(member_riders_returning_same_station)) {
+    member_riders_returning_same_station <- trip_details$member_returning_same_station
+  } else {
+    member_riders_returning_same_station <- merge(x =member_riders_returning_same_station, 
+                                                  y= trip_details$member_returning_same_station, by = "start_station_name", all= TRUE)
+  }  
 }
 
 casual_rideable_types <- data.frame(rideable_type=casual_rideable_types$rideable_type, number_of_rides=rowSums(casual_rideable_types[, 2: 14]))
@@ -115,7 +132,13 @@ all_rideable_type <- all_rideable_type %>% rename("Casual Rides" = number_of_rid
 
 View(all_rideable_type)
 
-print(casual_trip_duration_list)
+casual_riders_returning_same_station <- data.frame(start_station_name = casual_riders_returning_same_station$start_station_name,
+                                                   number_of_rides=rowSums(casual_riders_returning_same_station[, 2: 14]))
+
+member_riders_returning_same_station <- data.frame(start_station_name = member_riders_returning_same_station$start_station_name,
+                                                   number_of_rides=rowSums(member_riders_returning_same_station[, 2: 14]))
+View(casual_riders_returning_same_station)
+View(member_riders_returning_same_station)
 
 # Creating df for Mean
 mean_df <- data.frame(Month=casual_trip_month_list, Mean_casual=casual_trip_duration_list, Mean_member=member_trip_duration_list)
