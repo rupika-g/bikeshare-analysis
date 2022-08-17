@@ -1,3 +1,27 @@
+---
+title: "Bike-share analysis"
+author: "Rupika Gopinathan"
+date: "2022-08-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Business Task
+
+Identifying the different bike usage patterns of the casual and member Cyclistic riders in order to maximize the number of annual memberships.
+
+### Objective
+
+## Data source
+
+## Initial Hypothesis
+
+## Summary of Analysis
+
+```{r loading packages, echo=FALSE, message=FALSE}
 library(tidyverse)
 library(dplyr)
 library(readr)
@@ -5,6 +29,9 @@ library(janitor)
 library(rlang)
 library(lubridate)
 library(ggplot2)
+```
+
+```{r}
 # library(hms)
 
 # Calculate ride duration and mean ride duration
@@ -148,7 +175,13 @@ mean_df <- data.frame(Month=casual_trip_month_list, Mean_casual=casual_trip_dura
 # Creating df for total number of rides
 number_of_riders_df <- data.frame(Month=casual_trip_month_list, casual_riders=num_of_casual_riders, member_riders=num_of_member_riders)
 
-# Visualization
+
+
+```
+
+### Visualization
+
+```{r}
 # Mean
 ggplot(mean_df, aes(x= Month)) + 
   geom_line(aes(y= Mean_casual, color = "mean_casual"))+
@@ -167,20 +200,33 @@ ggplot(number_of_riders_df, aes(x= Month)) +
 
 # Rideable types
 ggplot(all_rideable_type , aes(fill=user_type, y=number_of_rides, x=rideable_type)) + 
-  geom_bar(position="dodge", stat="identity") + coord_flip() + labs(title= "Member Vs Casual rideable types")
+  geom_bar(position="dodge", stat="identity") + coord_flip()
 
 # Returning to same station
 casual_data <- head(casual_riders_returning_same_station %>% drop_na() %>% arrange(-number_of_rides), 25)
 ggplot(casual_data, aes(x=reorder(start_station_name, number_of_rides), y=number_of_rides, fill=number_of_rides)) + 
-  geom_bar(stat='identity') + coord_flip() +
-  labs(title= "Casual riders returning to same station as started",
-       y= "casual_rides", x= "station_name") # Without stat='identity' ggplot wants to aggregate your data into counts
-
+  geom_bar(stat='identity') + coord_flip() # Without stat='identity' ggplot wants to aggregate your data into counts.
 View(casual_riders_returning_same_station)
 
 member_data <- head(member_riders_returning_same_station %>% drop_na() %>% arrange(-number_of_rides), 25)
 ggplot(member_data, aes(x=reorder(start_station_name, number_of_rides), y=number_of_rides, fill=number_of_rides)) + 
-  geom_bar(stat='identity') + coord_flip() + labs(title="Member riders returning to same station as started",
-                                                  y= "member_rides", x= "station_name")
-
+  geom_bar(stat='identity') + coord_flip()
 View(member_riders_returning_same_station)
+
+```
+
+## High-level insight
+
+## Recommendations
+
+PROS CONS
+
+1:
+
+2:
+
+3:
+
+## Further Exploration
+
+## Reference

@@ -1,0 +1,64 @@
+---
+title: 'Project Cyclistic: Summary of Analysis'
+author: "Rupika Gopinathan"
+date: "2022-08-16"
+output: html_document
+---
+
+# Cyclistic Data: Summary of Analysis
+
+## Introduction
+
+### Setting up my environment
+
+Notes: Setting up my environment by loading the imperative packages such as: `tidyverse` and `ggplot2`
+
+```{r loading packages, echo=FALSE, message=FALSE}
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(janitor)
+library(rlang)
+library(lubridate)
+library(ggplot2)
+```
+
+### Load data for Analysis
+
+Note: Loading 12 months Cyclistic dataset for analysis, by creating a `function`
+
+## Plots
+
+### 1. Mean of ride length
+
+> Note: Plotting graphs to visualize the mean ride duration of casual and member riders
+
+![](C:/Users/rramachandran/Downloads/Data%20Analysis%20Capstone%20Project/Rplot_ride_duration.png)
+
+Inference: Casual riders ride significantly for longer duration than the Cyclistic member riders.
+
+### 2. Total number of riders
+
+![](C:/Users/rramachandran/Downloads/Data%20Analysis%20Capstone%20Project/Rplot_number_of%20riders.png)
+
+Inference: More number of rides are taken by members than casual riders.
+
+### 3.Rideable types
+
+Note: Plotting graph to visualize the different rideable types used by casual and member riders
+
+![](C:/Users/rramachandran/Downloads/Data%20Analysis%20Capstone%20Project/Rplot_rideable_types.png)
+
+**Inference:** Classic bike is the most preferred amongst the three types of rideables. Likewise, members tend to use electric and classic bikes more than casual riders. However, there is no record of docked bike used by members.
+
+### 4. Rides ending in the same station as started
+
+#### For casual riders
+
+![](C:/Users/rramachandran/Downloads/Data%20Analysis%20Capstone%20Project/Rplot_casual_riders_start_station.png)
+
+#### For member riders
+
+![](C:/Users/rramachandran/Downloads/Data%20Analysis%20Capstone%20Project/Rplot_member_riders_start_station.png)
+
+## Conclusion
