@@ -5,7 +5,6 @@ library(janitor)
 library(rlang)
 library(lubridate)
 library(ggplot2)
-# library(hms)
 
 # Calculate ride duration and mean ride duration
 # Return modified data frame with ride duration column
@@ -16,19 +15,19 @@ calculate_trip_duration <- function(data_frame, type_of_rider) {
   mean_trip_duration <- mean(data_frame$trip_duration)
   total_no_of_riders <- length(data_frame$ride_id)
   #print(paste("Mean", type_of_rider, mean_trip_duration))
-  return(list("month" = data_frame$started_at[1], "mean" = mean_trip_duration, 
+  return(list("month" = data_frame$started_at[1], "mean" = mean_trip_duration,
               "num_riders" = total_no_of_riders))
 }
 
 total_riders_per_station <- function(sub_df, df_name) {
   sub_df %>% group_by(rideable_type) %>%
     summarize(total_rideable_type = length(rideable_type))
-  
+
   # Most popular 10 routes
   new_sub_df <- sub_df %>% drop_na() %>% 
     count(start_station_name, end_station_name, sort= TRUE) %>% 
     filter(start_station_name == end_station_name)
-  
+
   #View(new_sub_df, df_name)
   return(new_sub_df)
 }
@@ -39,6 +38,10 @@ rideable_types <- function(sub_df, df_name) {
   return(types)
 }
 
+day_of_week <- function(sub_df, df_name) {
+  return(sub_df %>% group_by(week = weekdays(sub_df$started_at)) %>% summarize(number_of_rides = length(ride_id)))
+}
+
 process_csv <- function(file_name) {
   # Load data
   df <- read_csv(file_name)
@@ -47,9 +50,9 @@ process_csv <- function(file_name) {
   df <- remove_empty(df, which=c("rows"))
   df <- remove_empty(df, which=c("cols"))
   #View(df, "Full")
-
+  
   #glimpse(df)
-
+  
   # Create data frames for member and casual riders
   casual_df <- df %>% filter(member_casual == "casual")
   member_df <- df %>% filter(member_casual == "member")
@@ -58,20 +61,25 @@ process_csv <- function(file_name) {
   
   casual_trip_details <- calculate_trip_duration(casual_df, "casual")
   member_trip_details <- calculate_trip_duration(member_df, "member")
-
+  
   unique(casual_df$rideable_type)
   number_of_casual_types <- rideable_types(casual_df, "Casual")
   number_of_member_types <- rideable_types(member_df, "Member")
+  
+  casual_day_of_week <- day_of_week(casual_df, "Casual")
+  member_day_of_week <- day_of_week(member_df, "Member")
   
   casual_riders_returning_same_station <- total_riders_per_station(casual_df, "Casual")
   casual_riders_returning_same_station <- casual_riders_returning_same_station[c("start_station_name", "n")] # Select only start_station_name and number of riders from the dataframe
   member_riders_returning_same_station <- total_riders_per_station(member_df, "Member")
   member_riders_returning_same_station <- member_riders_returning_same_station[c("start_station_name", "n")]
-
+  
   return(list("casual" = casual_trip_details, "member" = member_trip_details, 
               "casual_types" = number_of_casual_types, "member_types" = number_of_member_types,
               "casual_returning_same_station" = casual_riders_returning_same_station,
-              "member_returning_same_station" = member_riders_returning_same_station))
+              "member_returning_same_station" = member_riders_returning_same_station,
+              "casual_day_of_week" = casual_day_of_week,
+              "member_day_of_week" = member_day_of_week))
 }
 
 csv_file_list = list.files("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/", pattern="*-divvy-tripdata.csv", full.names=TRUE)
@@ -92,9 +100,13 @@ member_rideable_types <- NULL
 casual_riders_returning_same_station <- NULL
 member_riders_returning_same_station <- NULL
 
+allday_casual_riders <- NULL
+allday_member_riders <- NULL
+
 
 for (csv_file in csv_file_list) {
   trip_details <- process_csv(csv_file)
+  
   casual_trip_duration_list <- append(casual_trip_duration_list, trip_details$casual$mean)
   casual_trip_month_list <- append(casual_trip_month_list, trip_details$casual$month)
   num_of_casual_riders <- append(num_of_casual_riders, trip_details$casual$num_riders)
@@ -108,7 +120,12 @@ for (csv_file in csv_file_list) {
   } else {
     casual_riders_returning_same_station <- merge(x = casual_riders_returning_same_station, 
                                                   y = trip_details$casual_returning_same_station, by = "start_station_name", all= TRUE)
-  }  
+  }
+  if (is.null(allday_casual_riders)) {
+    allday_casual_riders <- trip_details$casual_day_of_week
+  } else {
+    allday_casual_riders <- merge(x = allday_casual_riders, y = trip_details$casual_day_of_week, by = "week", all= TRUE)
+  }
   
   member_trip_duration_list <- append(member_trip_duration_list, trip_details$member$mean)
   member_trip_month_list <- append(member_trip_month_list, trip_details$member$month)
@@ -123,7 +140,12 @@ for (csv_file in csv_file_list) {
   } else {
     member_riders_returning_same_station <- merge(x =member_riders_returning_same_station, 
                                                   y= trip_details$member_returning_same_station, by = "start_station_name", all= TRUE)
-  }  
+  }
+  if (is.null(allday_member_riders)) {
+    allday_member_riders <- trip_details$member_day_of_week
+  } else {
+    allday_member_riders <- merge(x = allday_member_riders, y = trip_details$member_day_of_week, by = "week", all= TRUE)
+  }
 }
 
 casual_rideable_types <- data.frame(rideable_type=casual_rideable_types$rideable_type, number_of_rides=rowSums(casual_rideable_types[, 2: number_csv_files + 1]))
@@ -147,6 +169,11 @@ mean_df <- data.frame(Month=casual_trip_month_list, Mean_casual=casual_trip_dura
 
 # Creating df for total number of rides
 number_of_riders_df <- data.frame(Month=casual_trip_month_list, casual_riders=num_of_casual_riders, member_riders=num_of_member_riders)
+
+# Creating df for weekly riders
+weekly_casual_rides <- data.frame(week = allday_casual_riders$week, number_of_rides=rowSums(allday_casual_riders[, 2: number_csv_files + 1]))
+weekly_member_rides <- data.frame(week = allday_member_riders$week, number_of_rides=rowSums(allday_member_riders[, 2: number_csv_files + 1]))
+weekly_rides <- data.frame(week=allday_casual_riders$week, casual=weekly_casual_rides$number_of_rides, member=weekly_member_rides$number_of_rides)
 
 # Visualization
 # Mean
@@ -184,3 +211,10 @@ ggplot(member_data, aes(x=reorder(start_station_name, number_of_rides), y=number
                                                   y= "member_rides", x= "station_name")
 
 View(member_riders_returning_same_station)
+
+# Weekday Weekend riders
+ggplot(weekly_rides, aes(x=factor(week, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),group = 1)) +
+  geom_line(aes(y=casual, color='Rides by casual users')) +
+  geom_line(aes(y=member, color='Rides by member')) +
+  xlab('Weekday') +
+  ylab('Number of rides')
