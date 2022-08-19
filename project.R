@@ -31,15 +31,19 @@ total_riders_per_station <- function(sub_df, df_name) {
   #View(new_sub_df, df_name)
   return(new_sub_df)
 }
-
+ # rideable types
 rideable_types <- function(sub_df, df_name) {
   types <- sub_df %>% group_by(rideable_type)%>%
     summarize(total_rideable_type = length(rideable_type))
   return(types)
 }
 
+# weekly riders and mean duration
 day_of_week <- function(sub_df, df_name) {
-  return(sub_df %>% group_by(week = weekdays(sub_df$started_at)) %>% summarize(number_of_rides = length(ride_id)))
+  sub_df$trip_duration <- difftime(sub_df$ended_at, sub_df$started_at)
+  number_of_rides <- sub_df %>% group_by(week = weekdays(started_at)) %>% summarize(number_of_rides = length(ride_id))
+  mean_duration <- sub_df %>% group_by(week = weekdays(started_at)) %>% summarize(mean_ride_duration = mean(trip_duration))
+  return(list("number_of_rides" = number_of_rides, "mean_duration" = mean_duration))
 }
 
 process_csv <- function(file_name) {
@@ -102,6 +106,8 @@ member_riders_returning_same_station <- NULL
 
 allday_casual_riders <- NULL
 allday_member_riders <- NULL
+allday_casual_mean_duration <- NULL
+allday_member_mean_duration <- NULL
 
 
 for (csv_file in csv_file_list) {
@@ -122,9 +128,11 @@ for (csv_file in csv_file_list) {
                                                   y = trip_details$casual_returning_same_station, by = "start_station_name", all= TRUE)
   }
   if (is.null(allday_casual_riders)) {
-    allday_casual_riders <- trip_details$casual_day_of_week
+    allday_casual_riders <- trip_details$casual_day_of_week$number_of_rides
+    allday_casual_mean_duration <- trip_details$casual_day_of_week$mean_duration
   } else {
-    allday_casual_riders <- merge(x = allday_casual_riders, y = trip_details$casual_day_of_week, by = "week", all= TRUE)
+    allday_casual_riders <- merge(x = allday_casual_riders, y = trip_details$casual_day_of_week$number_of_rides, by = "week", all= TRUE)
+    allday_casual_mean_duration <- merge(x = allday_casual_mean_duration, y = trip_details$casual_day_of_week$mean_duration, by = "week", all= TRUE)
   }
   
   member_trip_duration_list <- append(member_trip_duration_list, trip_details$member$mean)
@@ -142,9 +150,11 @@ for (csv_file in csv_file_list) {
                                                   y= trip_details$member_returning_same_station, by = "start_station_name", all= TRUE)
   }
   if (is.null(allday_member_riders)) {
-    allday_member_riders <- trip_details$member_day_of_week
+    allday_member_riders <- trip_details$member_day_of_week$number_of_rides
+    allday_member_mean_duration <- trip_details$member_day_of_week$mean_duration
   } else {
-    allday_member_riders <- merge(x = allday_member_riders, y = trip_details$member_day_of_week, by = "week", all= TRUE)
+    allday_member_riders <- merge(x = allday_member_riders, y = trip_details$member_day_of_week$number_of_rides, by = "week", all= TRUE)
+    allday_member_mean_duration <- merge(x = allday_member_mean_duration, y = trip_details$member_day_of_week$mean_duration, by = "week", all= TRUE)
   }
 }
 
@@ -174,6 +184,12 @@ number_of_riders_df <- data.frame(Month=casual_trip_month_list, casual_riders=nu
 weekly_casual_rides <- data.frame(week = allday_casual_riders$week, number_of_rides=rowSums(allday_casual_riders[, 2: number_csv_files + 1]))
 weekly_member_rides <- data.frame(week = allday_member_riders$week, number_of_rides=rowSums(allday_member_riders[, 2: number_csv_files + 1]))
 weekly_rides <- data.frame(week=allday_casual_riders$week, casual=weekly_casual_rides$number_of_rides, member=weekly_member_rides$number_of_rides)
+
+# Creating df for weekly rider's mean duration 
+weekly_casual_mean_ride_duration <- data.frame(week = allday_casual_mean_duration$week, mean_duration=rowSums(sapply(allday_casual_mean_duration[, 1: number_csv_files + 1], function(x) as.numeric(as.character(x)))))
+weekly_member_mean_ride_duration <- data.frame(week = allday_member_mean_duration$week, mean_duration=rowSums(sapply(allday_member_mean_duration[, 1: number_csv_files + 1], function(x) as.numeric(as.character(x)))))
+weekly_mean_ride_duration <- data.frame(week=allday_casual_mean_duration$week, casual=weekly_casual_mean_ride_duration$mean_duration, member=weekly_member_mean_ride_duration$mean_duration)
+
 
 # Visualization
 # Mean
@@ -212,9 +228,16 @@ ggplot(member_data, aes(x=reorder(start_station_name, number_of_rides), y=number
 
 View(member_riders_returning_same_station)
 
-# Weekday Weekend riders
+# Weekly riders
 ggplot(weekly_rides, aes(x=factor(week, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),group = 1)) +
   geom_line(aes(y=casual, color='Rides by casual users')) +
-  geom_line(aes(y=member, color='Rides by member')) +
-  xlab('Weekday') +
+  geom_line(aes(y=member, color='Rides by members')) +
+  xlab('Weekdays') +
   ylab('Number of rides')
+
+# Mean duration of rides weekly
+ggplot(weekly_mean_ride_duration, aes(x=factor(week, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")),group = 1)) +
+  geom_line(aes(y=casual, color='Ride length by casual users')) +
+  geom_line(aes(y=member, color='Ride length by members')) +
+  xlab('Weekdays') +
+  ylab('Mean ride duration')
