@@ -225,7 +225,7 @@ ggplot(mean_df, aes(x = Month)) +
     x = "Month", y = "Mean duration(seconds)", colour = "Mean duration"
   )
 
-ggsave("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/Total mean duration of casual and member riders.png", width = 2500, height = 1200, units = "px")
+ggsave("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/visualization/Total mean duration of casual and member riders.png", width = 2500, height = 1200, units = "px")
 
 # Total number of riders
 ggplot(number_of_riders_df, aes(x = Month)) +
