@@ -26,12 +26,10 @@ install.packages(lubridate)
 install.packages(ggplot2)
 ```
 
-Select the source file (`Ctrl+A`) and press `CTRL+Enter` to run the script.
-
 ## Creating Report
 
 Download the bikeshare raw data from [here](https://divvy-tripdata.s3.amazonaws.com/index.html) and extract the csv files.
 
-If using R Studio, open the R script [bikeshare_analysis.R](bikeshare_analysis.R) and press `CTRL+ALT+R` to run the R script. This will generate the visualizations to show usage patterns of member and casual riders.
+If using R Studio, open the R script [bikeshare_analysis.R](bikeshare_analysis.R) and press `Ctrl+Alt+R` to run the R script. This will generate the visualizations to show usage patterns of member and casual riders.
 
 [Sample Report](Cyclist_Analysis_summary.md) of bikeshare data from June 2021 to June 2022
