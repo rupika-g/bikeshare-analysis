@@ -97,7 +97,7 @@ process_csv <- function(file_name) {
   ))
 }
 
-csv_file_list <- list.files("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/", pattern = "*-divvy-tripdata.csv", full.names = TRUE)
+csv_file_list <- list.files(".", pattern = "*-divvy-tripdata.csv", full.names = TRUE)
 number_csv_files <- length(csv_file_list)
 
 # Create list
@@ -225,7 +225,7 @@ ggplot(mean_df, aes(x = Month)) +
     x = "Month", y = "Mean duration(seconds)", colour = "Mean duration"
   )
 
-ggsave("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/visualization/Total mean duration of casual and member riders.png", width = 2500, height = 1200, units = "px")
+ggsave("visualization/Total mean duration of casual and member riders.png", width = 2500, height = 1200, units = "px")
 
 # Total number of riders
 ggplot(number_of_riders_df, aes(x = Month)) +
@@ -241,7 +241,7 @@ ggplot(number_of_riders_df, aes(x = Month)) +
     legend.text = element_text(size = 11)
   )
 
-ggsave("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/visualization/Total number of riders.png", width = 2500, height = 1200, units = "px")
+ggsave("visualization/Total number of riders.png", width = 2500, height = 1200, units = "px")
 
 # Rideable types
 ggplot(all_rideable_type, aes(fill = user_type, y = number_of_rides, x = rideable_type)) +
@@ -254,7 +254,7 @@ ggplot(all_rideable_type, aes(fill = user_type, y = number_of_rides, x = rideabl
     legend.text = element_text(size = 11)
   )
 
-ggsave("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/visualization/Rideable types.png", width = 2500, height = 900, units = "px")
+ggsave("visualization/Rideable types.png", width = 2500, height = 900, units = "px")
 
 # Returning to same station
 casual_data <- head(casual_riders_returning_same_station %>% drop_na() %>% arrange(-number_of_rides), 25)
@@ -271,7 +271,7 @@ ggplot(casual_data, aes(x = reorder(start_station_name, number_of_rides), y = nu
     legend.text = element_text(size = 11)
   ) # Without stat='identity' ggplot wants to aggregate your data into counts
 
-ggsave("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/visualization/Casual_returning_station_numbers.png", width = 2500, height = 1200, units = "px")
+ggsave("visualization/Casual_returning_station_numbers.png", width = 2500, height = 1200, units = "px")
 
 # View(casual_riders_returning_same_station)
 
@@ -289,7 +289,7 @@ ggplot(member_data, aes(x = reorder(start_station_name, number_of_rides), y = nu
     legend.text = element_text(size = 11)
   )
 
-ggsave("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/visualization/Members_returning_station_numbers.png", width = 2500, height = 1200, units = "px")
+ggsave("visualization/Members_returning_station_numbers.png", width = 2500, height = 1200, units = "px")
 
 # View(member_riders_returning_same_station)
 
@@ -306,7 +306,7 @@ ggplot(weekly_rides, aes(x = factor(week, levels = c("Monday", "Tuesday", "Wedne
     title = "Number of Riders Week Wise",
     subtitle = "Total number of casual and member riders weekly", x = "Weekdays", y = "Number of rides", colour = "Rides"
   )
-ggsave("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/visualization/Riders week wise.png", width = 2500, height = 1200, units = "px")
+ggsave("visualization/Riders week wise.png", width = 2500, height = 1200, units = "px")
 
 # Mean duration of rides weekly
 ggplot(weekly_mean_ride_duration, aes(x = factor(week, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")), group = 1)) +
@@ -321,6 +321,6 @@ ggplot(weekly_mean_ride_duration, aes(x = factor(week, levels = c("Monday", "Tue
     title = "Weekdays vs Mean Ride Duration",
     subtitle = "Mean ride duration by casual and member users", x = "Weekdays", y = "Mean ride duration", color = "Ride duration"
   )
-ggsave("C:/Users/rramachandran/Downloads/Data Analysis Capstone Project/visualization/Mean duration of rides weekly.png",
+ggsave("visualization/Mean duration of rides weekly.png",
   width = 2500, height = 1200, units = "px"
 )

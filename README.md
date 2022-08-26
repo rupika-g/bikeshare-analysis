@@ -8,6 +8,10 @@ Analyze bikeshare data to maximize the number of annual memberships. The objecti
 
 Download and install R from [here](https://cran.r-project.org/mirrors.html)
 
+Click "Session->Set Working Directory->To Source File Location" in RStudio.
+
+![screenshot](screenshot1.png)
+
 ### Libraries
 
 Install the following R libraries.
@@ -21,6 +25,8 @@ install.packages(rlang)
 install.packages(lubridate)
 install.packages(ggplot2)
 ```
+
+Select the source file (`Ctrl+A`) and press `CTRL+Enter` to run the script.
 
 ## Creating Report
 
