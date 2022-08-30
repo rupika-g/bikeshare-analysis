@@ -167,7 +167,7 @@ electric bike and classic bike usage is fairly at odds.**
 ## Limitations
 
 Data-privacy issues prohibit from using riders' personally identifiable
-information. This  
-means that one won't be able to connect pass purchases to credit card
-numbers to determine if casual riders live in the bike-share service
-area or if they have purchased multiple single passes.
+information. This means that one won't be able to connect pass purchases
+to credit card numbers to determine if casual riders live in the
+bike-share service area or if they have purchased multiple single
+passes.
