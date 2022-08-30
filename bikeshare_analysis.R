@@ -26,7 +26,6 @@ total_riders_per_station <- function(sub_df, df_name) {
     group_by(rideable_type) %>%
     summarize(total_rideable_type = length(rideable_type))
 
-  # Most popular 10 routes
   new_sub_df <- sub_df %>%
     drop_na() %>%
     count(start_station_name, end_station_name, sort = TRUE) %>%
@@ -211,6 +210,9 @@ weekly_mean_ride_duration <- data.frame(week = allday_casual_mean_duration$week,
 
 
 # Visualization
+# Create a folder to save visualizations
+dir.create(file.path(".", "visualization"), showWarnings = FALSE)
+
 # Mean
 ggplot(mean_df, aes(x = Month)) +
   geom_line(aes(y = Mean_casual, color = "casual")) +
