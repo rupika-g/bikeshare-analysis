@@ -112,7 +112,8 @@ non-members ride for longer duration throughout the weekend.
 
 **The trends suggest that most of the casual riders are visitors as
 there tend to be an increase in number of casual riders from July to
-August (vacation season), as well as through weekends all year.**
+August (during the Summer festive season), as well as through weekends
+all year.**
 
 **On the other hand, the increased number of member rides round the year
 does not clearly states that the number of members are more than casual
@@ -146,7 +147,7 @@ electric bike and classic bike usage is fairly at odds.**
 
     The most preferred among the rideable types is Classic and Electric
     bike. Increasing the number of these bikes at the listed top 20
-    stations, with a special rate membership plan.
+    stations, offering a special membership plan.
 
 <br><br>
 
